@@ -178,3 +178,70 @@ body {
   font-size: 0.9rem;
 }
 
+/* History log (under Current Total) */
+.admin-history {
+  margin-top: 12px;
+  padding: 12px;
+  border: 2px solid rgba(255, 0, 0, 0.8);
+  border-radius: 12px;
+  background: rgba(255, 0, 0, 0.04);
+}
+
+.admin-history-empty {
+  opacity: 0.75;
+  color: #ffb3b3;
+  font-size: 0.95rem;
+}
+
+.admin-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-history-item:last-child {
+  border-bottom: none;
+}
+
+.admin-history-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-history-label {
+  font-size: 0.95rem;
+  opacity: 0.95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-history-total {
+  color: #00ff00;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-weight: 800;
+}
+
+.admin-restore-btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #2a2a2a;
+  background: #00ff00;
+  color: #000;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-restore-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+

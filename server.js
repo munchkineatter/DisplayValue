@@ -16,10 +16,25 @@ let totalCents = 0;
 // For reset, we push `-previousTotalCents` so undo returns to the previous total.
 const historyDeltasCents = [];
 
+// Action checkpoints so the admin can restore to any previous state.
+// checkpoints[0] is always the start state.
+const checkpoints = [
+  { id: 0, label: 'Start', totalCents: 0, depth: 0 }
+];
+let nextCheckpointId = 1;
+
 function emitState() {
   io.emit('state', {
     totalCents,
-    historyDepth: historyDeltasCents.length
+    historyDepth: historyDeltasCents.length,
+    history: checkpoints
+      .slice(1) // omit "Start"
+      .map((c) => ({
+        id: c.id,
+        label: c.label,
+        totalCents: c.totalCents,
+        depth: c.depth
+      }))
   });
 }
 
@@ -36,7 +51,18 @@ function parseDollarsToCents(value) {
 
 io.on('connection', (socket) => {
   // Send current state to newly connected clients.
-  socket.emit('state', { totalCents, historyDepth: historyDeltasCents.length });
+  socket.emit('state', {
+    totalCents,
+    historyDepth: historyDeltasCents.length,
+    history: checkpoints
+      .slice(1)
+      .map((c) => ({
+        id: c.id,
+        label: c.label,
+        totalCents: c.totalCents,
+        depth: c.depth
+      }))
+  });
 
   socket.on('addAmount', (amount) => {
     const cents = parseDollarsToCents(amount);
@@ -44,6 +70,13 @@ io.on('connection', (socket) => {
 
     totalCents += cents;
     historyDeltasCents.push(cents);
+    const label = `Add $${typeof amount === 'string' ? amount.trim() : (cents / 100).toFixed(2)}`;
+    checkpoints.push({
+      id: nextCheckpointId++,
+      label,
+      totalCents,
+      depth: historyDeltasCents.length
+    });
     emitState();
   });
 
@@ -53,6 +86,12 @@ io.on('connection', (socket) => {
     historyDeltasCents.push(delta);
 
     totalCents = 0;
+    checkpoints.push({
+      id: nextCheckpointId++,
+      label: 'Reset',
+      totalCents,
+      depth: historyDeltasCents.length
+    });
     emitState();
   });
 
@@ -61,6 +100,27 @@ io.on('connection', (socket) => {
 
     const delta = historyDeltasCents.pop();
     totalCents -= delta;
+    // Undo should remove the last checkpointed state.
+    if (checkpoints.length > 1) checkpoints.pop();
+    emitState();
+  });
+
+  socket.on('restoreTo', (targetDepth) => {
+    // Restore the timeline to a previous checkpoint depth.
+    const depth = Number(targetDepth);
+    if (!Number.isFinite(depth)) return;
+    const target = Math.trunc(depth);
+
+    if (target < 0) return;
+    if (target > historyDeltasCents.length) return;
+
+    const checkpointIndex = checkpoints.findIndex((c) => c.depth === target);
+    if (checkpointIndex === -1) return;
+
+    totalCents = checkpoints[checkpointIndex].totalCents;
+    historyDeltasCents.length = target;
+    checkpoints.splice(checkpointIndex + 1);
+
     emitState();
   });
 });
