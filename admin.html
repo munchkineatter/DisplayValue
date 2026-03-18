@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Value Display - Admin</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="admin-page">
+  <div class="admin-container">
+    <h1 class="admin-title">Value Display - Admin</h1>
+
+    <div class="admin-status">
+      <span>Connection:</span>
+      <strong id="connectionStatus">Connecting...</strong>
+    </div>
+
+    <form id="addForm" class="admin-card" autocomplete="off">
+      <label class="admin-label" for="amountInput">Amount (dollars)</label>
+      <div class="admin-input-row">
+        <input
+          type="number"
+          id="amountInput"
+          step="0.01"
+          placeholder="0.00"
+          inputmode="decimal"
+        />
+        <button type="submit" id="addBtn">Add</button>
+      </div>
+      <div id="errorMessage" class="admin-error" aria-live="polite" style="display:none;"></div>
+    </form>
+
+    <div class="admin-card admin-actions">
+      <button id="undoBtn">Undo Previous</button>
+      <button id="resetBtn" class="danger">Reset</button>
+    </div>
+
+    <div class="admin-preview admin-card">
+      <div class="admin-preview-label">Current Total</div>
+      <div class="admin-preview-total" id="totalPreview">$0.00</div>
+      <div class="admin-preview-hint" id="historyHint"></div>
+
+      <div class="admin-history" id="historyLog">
+        <!-- History entries injected here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
+
