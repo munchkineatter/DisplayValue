@@ -7,7 +7,14 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="display-page">
-  <div class="display-total" id="totalValue" aria-live="polite">$0.00</div>
+  <div class="display-layout">
+    <div class="display-total" id="totalValue" aria-live="polite">$0.00</div>
+
+    <aside class="display-history-box">
+      <div class="display-history-title">Submissions</div>
+      <div class="display-history-entries" id="historyEntries"></div>
+    </aside>
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/display.js"></script>

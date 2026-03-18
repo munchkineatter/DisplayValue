@@ -20,9 +20,15 @@ body {
   overflow: hidden;
 }
 
-.display-total {
+.display-layout {
   height: 100vh;
   width: 100vw;
+  display: flex;
+  align-items: stretch;
+}
+
+.display-total {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,6 +42,91 @@ body {
   text-shadow: 0 0 22px rgba(0, 255, 0, 0.25);
 
   letter-spacing: 0.01em;
+}
+
+.display-history-box {
+  width: 360px;
+  border-left: 2px solid rgba(0, 255, 0, 0.25);
+  background: rgba(15, 15, 15, 0.92);
+  padding: 14px 14px 12px 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.display-history-title {
+  color: rgba(0, 255, 0, 0.95);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+}
+
+.display-history-entries {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 6px;
+}
+
+.display-history-empty {
+  opacity: 0.7;
+  color: #a9a9a9;
+  font-size: 0.85rem;
+}
+
+.display-history-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid rgba(0, 255, 0, 0.18);
+  background: rgba(0, 255, 0, 0.03);
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.display-history-row-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.display-history-row-seq {
+  color: rgba(0, 255, 0, 0.9);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+
+.display-history-row-total {
+  color: #00ff00;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-weight: 900;
+  font-size: 1.0rem;
+}
+
+.display-history-row-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.82rem;
+  opacity: 0.95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .display-history-box {
+    width: 280px;
+  }
 }
 
 /* =========================
