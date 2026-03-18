@@ -10,9 +10,11 @@ const resetBtnEl = document.getElementById('resetBtn');
 const totalPreviewEl = document.getElementById('totalPreview');
 const historyHintEl = document.getElementById('historyHint');
 const historyLogEl = document.getElementById('historyLog');
+const historySortBtnEl = document.getElementById('historySortBtn');
 const errorMessageEl = document.getElementById('errorMessage');
 
 let latestState = null;
+let historySortMode = 'desc'; // default: newest -> oldest
 
 function formatCentsAsDollars(cents) {
   const safeCents = Number.isFinite(cents) ? cents : 0;
@@ -60,22 +62,33 @@ socket.on('state', (state) => {
 function renderHistory(state) {
   const history = Array.isArray(state.history) ? state.history : [];
   const currentDepth = state.historyDepth ?? 0;
+  const entriesContainer = document.getElementById('historyEntries');
 
   if (history.length === 0) {
-    historyLogEl.innerHTML = '<div class="admin-history-empty">No history yet.</div>';
+    entriesContainer.innerHTML = '<div class="admin-history-empty">No history yet.</div>';
     return;
   }
 
-  // Oldest -> newest
-  historyLogEl.innerHTML = history
+  const sorted = history
     .slice()
-    .sort((a, b) => (a.depth ?? 0) - (b.depth ?? 0))
+    .sort((a, b) => {
+      const ad = a.depth ?? 0;
+      const bd = b.depth ?? 0;
+      return historySortMode === 'desc' ? bd - ad : ad - bd;
+    });
+
+  entriesContainer.innerHTML = sorted
     .map((entry) => {
       const isCurrent = (entry.depth ?? 0) === currentDepth;
+      const seq = entry.id ?? entry.seq ?? '';
+      const label = entry.label ?? '';
+
       return `
         <div class="admin-history-item" data-depth="${entry.depth}">
           <div class="admin-history-text">
-            <div class="admin-history-label">${escapeHtml(entry.label ?? '')}</div>
+            <div class="admin-history-label">
+              #${escapeHtml(seq)} ${escapeHtml(label)}
+            </div>
             <div class="admin-history-total">${formatCentsAsDollars(entry.totalCents)}</div>
           </div>
           <button class="admin-restore-btn" ${isCurrent ? 'disabled' : ''}>Restore</button>
@@ -85,8 +98,9 @@ function renderHistory(state) {
     .join('');
 
   // Attach listeners once per render.
-  historyLogEl.querySelectorAll('.admin-history-item').forEach((item) => {
-    item.querySelector('.admin-restore-btn').addEventListener('click', () => {
+  entriesContainer.querySelectorAll('.admin-history-item').forEach((item) => {
+    const btn = item.querySelector('.admin-restore-btn');
+    btn.addEventListener('click', () => {
       const depthStr = item.getAttribute('data-depth');
       const depth = Number(depthStr);
       socket.emit('restoreTo', depth);
@@ -143,4 +157,12 @@ undoBtnEl.addEventListener('click', () => {
 
 // Focus amount input on load
 window.addEventListener('load', () => amountInputEl.focus());
+
+if (historySortBtnEl) {
+  historySortBtnEl.addEventListener('click', () => {
+    historySortMode = historySortMode === 'desc' ? 'asc' : 'desc';
+    historySortBtnEl.textContent = historySortMode === 'desc' ? 'Newest → Oldest' : 'Oldest → Newest';
+    if (latestState) renderHistory(latestState);
+  });
+}
 
