@@ -1,0 +1,15 @@
+{
+  "name": "value-display",
+  "version": "1.0.0",
+  "description": "Casino utility running total with live display (Admin + Display) via Socket.io",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}
