@@ -17,10 +17,8 @@ let totalCents = 0;
 const historyDeltasCents = [];
 
 // Action checkpoints so the admin can restore to any previous state.
-// checkpoints[0] is always the start state.
-const checkpoints = [
-  { id: 0, label: 'Start', totalCents: 0, depth: 0 }
-];
+// checkpoints[0] is always the start state and is never shown in the UI.
+const checkpoints = [{ id: 0, label: 'Start', totalCents: 0, depth: 0, showInHistory: false }];
 let nextCheckpointId = 1;
 
 function emitState() {
@@ -29,6 +27,7 @@ function emitState() {
     historyDepth: historyDeltasCents.length,
     history: checkpoints
       .slice(1) // omit "Start"
+      .filter((c) => c.showInHistory)
       .map((c) => ({
         id: c.id,
         label: c.label,
@@ -56,6 +55,7 @@ io.on('connection', (socket) => {
     historyDepth: historyDeltasCents.length,
     history: checkpoints
       .slice(1)
+      .filter((c) => c.showInHistory)
       .map((c) => ({
         id: c.id,
         label: c.label,
@@ -75,23 +75,36 @@ io.on('connection', (socket) => {
       id: nextCheckpointId++,
       label,
       totalCents,
-      depth: historyDeltasCents.length
+      depth: historyDeltasCents.length,
+      showInHistory: true
     });
     emitState();
   });
 
   socket.on('resetTotal', () => {
-    // Delta that will be subtracted by undo to restore previous total.
-    const delta = -totalCents;
-    historyDeltasCents.push(delta);
+    const previousTotalCents = totalCents;
 
+    // Reset should clear the displayed history and restart the numbering.
+    // We still keep a hidden checkpoint/delta so `Undo Previous` can restore the pre-reset total.
+    historyDeltasCents.length = 0;
+    checkpoints.length = 0;
+    checkpoints.push({ id: 0, label: 'Start', totalCents: 0, depth: 0, showInHistory: false });
+    nextCheckpointId = 1;
+
+    // Apply reset: total becomes 0, but undo should revert by popping this delta.
+    const delta = -previousTotalCents;
+    historyDeltasCents.push(delta);
     totalCents = 0;
+
+    // Hidden checkpoint: not shown in the admin history list.
     checkpoints.push({
       id: nextCheckpointId++,
       label: 'Reset',
       totalCents,
-      depth: historyDeltasCents.length
+      depth: historyDeltasCents.length,
+      showInHistory: false
     });
+
     emitState();
   });
 
@@ -102,6 +115,7 @@ io.on('connection', (socket) => {
     totalCents -= delta;
     // Undo should remove the last checkpointed state.
     if (checkpoints.length > 1) checkpoints.pop();
+    if (checkpoints.length === 1) checkpoints[0].totalCents = totalCents; // keep start snapshot consistent
     emitState();
   });
 
@@ -120,6 +134,8 @@ io.on('connection', (socket) => {
     totalCents = checkpoints[checkpointIndex].totalCents;
     historyDeltasCents.length = target;
     checkpoints.splice(checkpointIndex + 1);
+
+    if (checkpoints.length === 1) checkpoints[0].totalCents = totalCents;
 
     emitState();
   });
